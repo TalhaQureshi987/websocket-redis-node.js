@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Real-Time Chat</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2em;
+        }
+
+        #chat {
+            max-width: 400px;
+            margin: auto;
+        }
+
+        #messages {
+            border: 1px solid #ccc;
+            min-height: 200px;
+            padding: 1em;
+            margin-bottom: 1em;
+            background: #fafafa;
+        }
+
+        .msg {
+            margin-bottom: 0.5em;
+        }
+
+        #input,
+        #send {
+            font-size: 1em;
+        }
+
+        #input {
+            width: 70%;
+            padding: 0.5em;
+        }
+
+        #send {
+            padding: 0.5em 1em;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chat">
+        <h2>Real-Time Chat</h2>
+        <div id="messages"></div>
+        <input id="input" autocomplete="off" placeholder="Type a message..." />
+        <button id="send">Send</button>
+    </div>
+    <script>
+        const socket = io('http://localhost:3000'); // Change port if needed
+        const messagesDiv = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const sendBtn = document.getElementById('send');
+
+        // Prompt for username
+        let username = '';
+        while (!username) {
+            username = prompt('Enter your username:');
+            if (username) username = username.trim();
+        }
+
+        function appendMessage(msgObj) {
+            const el = document.createElement('div');
+            el.className = 'msg';
+            el.innerHTML = `<strong>${msgObj.username}:</strong> ${msgObj.text}`;
+            messagesDiv.appendChild(el);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        sendBtn.onclick = () => {
+            const msg = input.value.trim();
+            if (msg) {
+                socket.emit('chat message', { username, text: msg });
+                input.value = '';
+            }
+        };
+        input.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') sendBtn.onclick();
+        });
+
+        socket.on('chat message', (msgObj) => {
+            appendMessage(msgObj);
+        });
+    </script>
+</body>
+
+</html>
